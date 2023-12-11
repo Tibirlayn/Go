@@ -1,27 +1,29 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
-	"net/http"
+    "database/sql"
+	_ "github.com/lib/pq"
+	"github.com/Tibirlayn/Go/handlers/routes"
+	"github.com/gin-gonic/gin"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	// Подключение к базе данных (здесь используется PostgreSQL, но можно выбрать другую базу данных)
-	db, err := sql.Open("postgres", "user=username dbname=youdb sslmode=disable")
+func main() {
+	db, err := sql.Open("postgres", "postgres://Server:admin@localhost/Account?sslmode=disable")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer db.Close()
 
-}
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
 
-func main() {
-	http.HandleFunc("/", indexHandler)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+    r := gin.Default()
 
-	fmt.Println("Сервер запущен на http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
-	
+	// Вызов обработчика маршрута
+	routes.SetupRoutes(r)
+
+    // Запуск сервера
+    r.Run(":8080")
 }
